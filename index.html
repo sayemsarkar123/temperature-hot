@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Temperature Hot</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background: url(images/bg-image.jpg) no-repeat;
+        background-size: cover;
+        height: 100vh;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <form class="col-md-6 m-auto py-5">
+        <div class="input-group mb-3">
+          <input
+            id="getCityName"
+            type="text"
+            class="form-control"
+            placeholder="Enter a location for Weather ..."
+          />
+          <div class="input-group-append">
+            <button id="cityBtn" type="button" class="btn btn-danger">
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="weather-status text-white text-center">
+        <img
+          id="weatherIcon"
+          src="https://openweathermap.org/img/wn/02d@2x.png"
+          alt=""
+        />
+        <h1 id="currentCity">Dhaka</h1>
+        <h3><span id="currentTemp">38.06</span>&deg;C</h3>
+        <h1 id="currentStatus" class="lead">Clouds</h1>
+      </div>
+    </div>
+
+    <script>
+      const cityBtn = document.getElementById('cityBtn');
+      const getCityName = document.getElementById('getCityName');
+      const weatherIcon = document.getElementById('weatherIcon');
+      const currentCity = document.getElementById('currentCity');
+      const currentTemp = document.getElementById('currentTemp');
+      const currentStatus = document.getElementById('currentStatus');
+
+      const randomBgPhoto = async () => {
+        const res = await fetch(
+          'https://source.unsplash.com/1920x1080/?nature,water'
+        );
+        return res;
+      };
+
+      const getTempData = async (cityName) => {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=metric&appid=89c0ace559d94969f5efb62afdd32d1c`
+        );
+        return res.json();
+      };
+      cityBtn.addEventListener('click', (event) => {
+        const userCityName = getCityName.value;
+        getTempData(userCityName).then((data) => {
+          if (data.cod === '404') {
+            alert('city not found');
+          } else {
+            updateWeather(data);
+          }
+        });
+      });
+
+      const getUserCurrentCity = async () => {
+        const res = await fetch('https://freegeoip.app/json/');
+        return res.json();
+      };
+
+      getUserCurrentCity().then((data) => {
+        getTempData(data.city).then((data) => updateWeather(data));
+      });
+
+      const updateWeather = (data) => {
+        const { main, icon } = data.weather[0];
+        const { temp } = data.main;
+        const { name } = data;
+        currentStatus.innerText = main;
+        weatherIcon.setAttribute(
+          'src',
+          `https://openweathermap.org/img/wn/${icon}@2x.png`
+        );
+        currentCity.innerText = name;
+        currentTemp.innerText = temp;
+      };
+
+      setInterval(() => {
+        randomBgPhoto().then((data) => {
+          document.body.style.backgroundImage = `url(${data.url})`;
+        });
+      }, 60000);
+    </script>
+  </body>
+</html>
